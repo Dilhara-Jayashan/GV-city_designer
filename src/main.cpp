@@ -143,7 +143,7 @@ int main()
         // Render the city if generated
         if (cityGenerator.hasCity() && renderer.isReady()) {
             const CityData& city = cityGenerator.getCityData();
-            renderer.render(city, cityConfig.view3D, shaderManager,
+            renderer.render(city, cityConfig, cityConfig.view3D, shaderManager,
                           brickTexture, concreteTexture, glassTexture,
                           roadTexture, grassTexture, fountainTexture);
         }

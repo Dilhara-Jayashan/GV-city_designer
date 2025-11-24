@@ -20,6 +20,7 @@
 #include <vector>
 #include "generation/city_generator.h"
 #include "rendering/shaders/shader_manager.h"
+#include "core/city_config.h"
 
 /**
  * @class CityRenderer
@@ -58,6 +59,7 @@ public:
     /**
      * @brief Render the city
      * @param city City data
+     * @param config City configuration (includes texture theme)
      * @param view3D Whether to use 3D mode
      * @param shaderManager Shader manager for rendering
      * @param brickTexture Texture ID for brick (low-rise buildings)
@@ -67,7 +69,7 @@ public:
      * @param grassTexture Texture ID for grass/parks
      * @param fountainTexture Texture ID for fountains
      */
-    void render(const CityData& city, bool view3D, ShaderManager& shaderManager,
+    void render(const CityData& city, const CityConfig& config, bool view3D, ShaderManager& shaderManager,
                 GLuint brickTexture, GLuint concreteTexture, GLuint glassTexture,
                 GLuint roadTexture, GLuint grassTexture, GLuint fountainTexture);
     
@@ -156,6 +158,7 @@ private:
     /**
      * @brief Render buildings (both 2D and 3D)
      * @param city City data
+     * @param config City configuration (includes texture theme)
      * @param view3D Render mode
      * @param shaderManager Shader manager
      * @param brickTexture Brick texture ID
@@ -163,7 +166,7 @@ private:
      * @param glassTexture Glass texture ID
      * @param buildingStart Starting index in VAO array
      */
-    void renderBuildings(const CityData& city, bool view3D, ShaderManager& shaderManager,
+    void renderBuildings(const CityData& city, const CityConfig& config, bool view3D, ShaderManager& shaderManager,
                          GLuint brickTexture, GLuint concreteTexture, GLuint glassTexture,
                          size_t buildingStart);
 };

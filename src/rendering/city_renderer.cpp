@@ -265,13 +265,13 @@ void CityRenderer::renderFountain(const CityData& city, bool view3D, ShaderManag
 }
 
 // Render buildings
-void CityRenderer::renderBuildings(const CityData& city, bool view3D, ShaderManager& shaderManager,
+void CityRenderer::renderBuildings(const CityData& city, const CityConfig& config, bool view3D, ShaderManager& shaderManager,
                                     GLuint brickTexture, GLuint concreteTexture, GLuint glassTexture,
                                     size_t buildingStart) {
     shaderManager.setIs2D(false);
     
     if (view3D) {
-        // Use textures in 3D mode
+        // Use textures in 3D mode based on texture theme
         shaderManager.setUseTexture(true);
         
         for (size_t i = buildingStart; i < VAOs.size(); i++) {
@@ -279,19 +279,72 @@ void CityRenderer::renderBuildings(const CityData& city, bool view3D, ShaderMana
             if (buildingIndex < city.buildings.size()) {
                 const Building& building = city.buildings[buildingIndex];
                 
-                // Bind appropriate texture based on building type
-                switch (building.type) {
-                    case BuildingType::LOW_RISE:
-                        glBindTexture(GL_TEXTURE_2D, brickTexture);
+                // Select texture based on BOTH building type AND texture theme
+                GLuint selectedTexture;
+                
+                switch (config.textureTheme) {
+                    case TextureTheme::MODERN:
+                        // Modern: Glass dominant, some concrete
+                        switch (building.type) {
+                            case BuildingType::LOW_RISE:
+                                selectedTexture = brickTexture;
+                                break;
+                            case BuildingType::MID_RISE:
+                                selectedTexture = concreteTexture;
+                                break;
+                            case BuildingType::HIGH_RISE:
+                                selectedTexture = glassTexture;
+                                break;
+                        }
                         break;
-                    case BuildingType::MID_RISE:
-                        glBindTexture(GL_TEXTURE_2D, concreteTexture);
+                        
+                    case TextureTheme::CLASSIC:
+                        // Classic: Brick dominant, traditional materials
+                        switch (building.type) {
+                            case BuildingType::LOW_RISE:
+                                selectedTexture = brickTexture;
+                                break;
+                            case BuildingType::MID_RISE:
+                                selectedTexture = brickTexture;  // More brick!
+                                break;
+                            case BuildingType::HIGH_RISE:
+                                selectedTexture = concreteTexture;  // Less glass
+                                break;
+                        }
                         break;
-                    case BuildingType::HIGH_RISE:
-                        glBindTexture(GL_TEXTURE_2D, glassTexture);
+                        
+                    case TextureTheme::INDUSTRIAL:
+                        // Industrial: Concrete/metal dominant
+                        switch (building.type) {
+                            case BuildingType::LOW_RISE:
+                                selectedTexture = concreteTexture;  // Industrial materials
+                                break;
+                            case BuildingType::MID_RISE:
+                                selectedTexture = concreteTexture;
+                                break;
+                            case BuildingType::HIGH_RISE:
+                                selectedTexture = concreteTexture;  // Minimal glass
+                                break;
+                        }
+                        break;
+                        
+                    case TextureTheme::FUTURISTIC:
+                        // Futuristic: Glass everywhere
+                        switch (building.type) {
+                            case BuildingType::LOW_RISE:
+                                selectedTexture = glassTexture;  // Even low buildings are glass
+                                break;
+                            case BuildingType::MID_RISE:
+                                selectedTexture = glassTexture;
+                                break;
+                            case BuildingType::HIGH_RISE:
+                                selectedTexture = glassTexture;
+                                break;
+                        }
                         break;
                 }
                 
+                glBindTexture(GL_TEXTURE_2D, selectedTexture);
                 glBindVertexArray(VAOs[i]);
                 glDrawArrays(GL_TRIANGLES, 0, vertexCounts[i]);
             }
@@ -326,7 +379,7 @@ void CityRenderer::renderBuildings(const CityData& city, bool view3D, ShaderMana
 }
 
 // Main render function
-void CityRenderer::render(const CityData& city, bool view3D, ShaderManager& shaderManager,
+void CityRenderer::render(const CityData& city, const CityConfig& config, bool view3D, ShaderManager& shaderManager,
                           GLuint brickTexture, GLuint concreteTexture, GLuint glassTexture,
                           GLuint roadTexture, GLuint grassTexture, GLuint fountainTexture) {
     if (!isReady()) return;
@@ -341,5 +394,5 @@ void CityRenderer::render(const CityData& city, bool view3D, ShaderManager& shad
     renderRoads(city, view3D, shaderManager, roadTexture, roadCount);
     renderParks(city, view3D, shaderManager, grassTexture, roadCount, parkCount);
     renderFountain(city, view3D, shaderManager, fountainTexture, fountainOffset, fountainCount);
-    renderBuildings(city, view3D, shaderManager, brickTexture, concreteTexture, glassTexture, buildingStart);
+    renderBuildings(city, config, view3D, shaderManager, brickTexture, concreteTexture, glassTexture, buildingStart);
 }
