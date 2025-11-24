@@ -1,6 +1,6 @@
 # City Designer - Algorithm Implementation
 
-## ✅ Completed: Core Algorithms
+## ✅ Completed Features
 
 ### 1. Bresenham's Line Algorithm ✅
 **Location**: `src/algorithms.cpp` + `include/algorithms.h`
@@ -32,6 +32,35 @@
 - Medium fountain (radius=50): **296 points**
 - Small roundabout (radius=30): **176 points**
 
+### 3. User Input System ✅
+**Location**: `src/input_handler.cpp` + `include/input_handler.h` + `city_config.h`
+
+**Purpose**: Real-time interactive city configuration and control
+
+**Implementation Details**:
+- Non-blocking input processing in render loop
+- Key state tracking to prevent repeated actions
+- Dynamic parameter adjustment with immediate feedback
+- Comprehensive control over all city parameters
+
+**Features**:
+- ✅ Building controls (number, layout size)
+- ✅ Road controls (pattern selection, width)
+- ✅ Skyline type selection (4 types)
+- ✅ Texture theme selection (4 themes)
+- ✅ Park and fountain customization
+- ✅ View mode toggle (2D/3D)
+- ✅ Configuration display and help system
+
+**User Controls**:
+- **Keys 1-0**: Numeric parameter adjustments
+- **R, S, T, F**: Cycle through options
+- **V**: Toggle view mode
+- **G**: Generate city
+- **P**: Print config
+- **H**: Show help
+- **ESC**: Exit
+
 ## Current Visualization
 
 The program currently displays:
@@ -53,10 +82,14 @@ The program currently displays:
 GV-city_designer/
 ├── include/
 │   ├── algorithms.h      ✅ Algorithm declarations
+│   ├── city_config.h     ✅ City configuration structure
+│   ├── input_handler.h   ✅ Input management
 │   ├── glad/
 │   └── KHR/
 ├── src/
 │   ├── algorithms.cpp    ✅ Algorithm implementations
+│   ├── city_config.cpp   ✅ Configuration management
+│   ├── input_handler.cpp ✅ Keyboard input handling
 │   ├── main.cpp          ✅ Main program + visualization
 │   └── glad.c
 └── CityDesigner          ✅ Executable
@@ -64,7 +97,8 @@ GV-city_designer/
 
 ## Compilation Command
 ```bash
-clang++ src/main.cpp src/glad.c src/algorithms.cpp -o CityDesigner \
+clang++ src/main.cpp src/glad.c src/algorithms.cpp src/city_config.cpp src/input_handler.cpp \
+    -o CityDesigner \
     -Iinclude \
     -I/opt/homebrew/include \
     -L/opt/homebrew/lib \
@@ -82,10 +116,18 @@ clang++ src/main.cpp src/glad.c src/algorithms.cpp -o CityDesigner \
 - ⏳ **3D Model with Texture Mapping** - Next priority
 
 ### Evaluation Criteria Progress:
-- **Technical Implementation (40%)**: 50% complete
-- **Creativity & Design (30%)**: 20% complete
-- **Code Quality (10%)**: 90% complete (well-commented, organized)
+- **Technical Implementation (40%)**: 60% complete ⬆️
+- **Creativity & Design (30%)**: 40% complete ⬆️
+- **Code Quality (10%)**: 95% complete (well-commented, organized)
 - **Presentation (20%)**: 0% complete (due later)
+
+### Recent Additions (Nov 24, 2025):
+- ✅ Complete interactive input system
+- ✅ City configuration management
+- ✅ Real-time parameter adjustment
+- ✅ Comprehensive keyboard controls
+- ✅ Help and configuration display
+- ✅ Updated documentation
 
 ## Team Notes
 - Deadline: November 26, 2025
