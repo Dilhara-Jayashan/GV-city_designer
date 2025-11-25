@@ -61,4 +61,19 @@ std::vector<float> fountainTo3DMesh(const std::vector<Point>& fountainPoints,
                                      int screenHeight, 
                                      bool is3D);
 
+/**
+ * @brief Generate 3D mesh for fountain light bulbs (small spheres)
+ * 
+ * Creates small spherical meshes representing light bulbs placed around
+ * and on the fountain structure for nighttime illumination effect.
+ * 
+ * @param fountainPoints Points defining the circular boundary of the fountain
+ * @param screenWidth Width of the viewport in pixels
+ * @param screenHeight Height of the viewport in pixels
+ * @return std::vector<float> Vertex data with positions and UV coordinates (x, y, z, u, v)
+ */
+std::vector<float> fountainLightsTo3DMesh(const std::vector<Point>& fountainPoints,
+                                          int screenWidth,
+                                          int screenHeight);
+
 #endif // PARK_MESH_H

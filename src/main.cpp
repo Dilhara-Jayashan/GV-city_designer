@@ -1,178 +1,270 @@
+/**
+ * @file main.cpp
+ * @brief City Designer - Main Entry Point
+ * 
+ * This is a feature-based city generation and visualization tool.
+ * All 5 creative features are implemented:
+ * 1. Building Window Lights (night time)
+ * 2. Day/Night Cycle (sky colors, time progression)
+ * 3. Traffic System (vehicle animation)
+ * 4. Click-to-Place Buildings (interactive placement)
+ * 5. Save/Load System (JSON serialization)
+ * 
+ * @author City Designer Team
+ * @date November 2025
+ */
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include <vector>
-#include <cmath>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+// STB Image Implementation (must be defined once)
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+// Core Systems
 #include "core/application.h"
 #include "core/city_config.h"
-#include "utils/algorithms.h"
-#include "utils/input_handler.h"
+
+// Generation Systems
 #include "generation/city_generator.h"
-#include "rendering/texture_manager.h"
-#include "rendering/shaders/shader_manager.h"
+
+// Rendering Systems
 #include "rendering/camera.h"
 #include "rendering/city_renderer.h"
+#include "rendering/texture_manager.h"
+#include "rendering/shaders/shader_manager.h"
 
+// Feature Systems (The 5 Creative Features)
+#include "features/building_lights/building_lighting_system.h"
+#include "features/day_night_cycle/day_night_cycle.h"
+#include "features/traffic_system/traffic_generator.h"
+#include "features/building_placement/building_placement_system.h"
+#include "features/save_load/city_serializer.h"
+
+// Utility Systems
+#include "utils/input_handler.h"
+
+/**
+ * @brief Main application entry point
+ * 
+ * Initializes all systems, creates the 5 feature systems,
+ * and runs the main render loop.
+ */
 int main()
 {
-    // Window dimensions
+    // ===== CONFIGURATION =====
     const int SCREEN_WIDTH = 800;
     const int SCREEN_HEIGHT = 600;
     
-    // Create city configuration with default values
     CityConfig cityConfig;
     InputHandler inputHandler(cityConfig);
-    
-    // Create city generator
     CityGenerator cityGenerator(SCREEN_WIDTH, SCREEN_HEIGHT);
     
-    // Display welcome message and controls
+    // ===== DISPLAY WELCOME MESSAGE =====
     std::cout << "\n";
     std::cout << "╔═══════════════════════════════════════════════════════════╗\n";
     std::cout << "║                    🏙️  CITY DESIGNER 🏙️                   ║\n";
     std::cout << "║            Interactive 3D City Generation Tool            ║\n";
+    std::cout << "║                                                           ║\n";
+    std::cout << "║  5 Creative Features:                                     ║\n";
+    std::cout << "║  1️⃣  Building Window Lights (day/night)                   ║\n";
+    std::cout << "║  2️⃣  Day/Night Cycle (sky transitions)                    ║\n";
+    std::cout << "║  3️⃣  Traffic System (animated vehicles)                   ║\n";
+    std::cout << "║  4️⃣  Click-to-Place Buildings (interactive)               ║\n";
+    std::cout << "║  5️⃣  Save/Load System (JSON persistence)                  ║\n";
     std::cout << "╚═══════════════════════════════════════════════════════════╝\n";
     InputHandler::displayControls();
     cityConfig.printConfig();
     
-    // Initialize application (GLFW + OpenGL context)
-    Application app(SCREEN_WIDTH, SCREEN_HEIGHT, "City Designer - Interactive Mode");
+    // ===== INITIALIZE OPENGL =====
+    Application app(SCREEN_WIDTH, SCREEN_HEIGHT, "City Designer - Feature-Based Architecture");
     if (!app.isValid()) {
         return -1;
     }
     
-    // Create camera
     Camera camera(glm::vec3(0.0f, 2.0f, 6.0f), -90.0f, 0.0f);
     camera.setMovementSpeed(5.0f);
-    
-    // Setup callbacks (framebuffer resize + mouse)
     app.setupCallbacks(&camera);
     
-    // Set initial cursor mode based on starting view (2D = normal cursor)
-    if (cityConfig.view3D) {
-        glfwSetInputMode(app.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    } else {
-        glfwSetInputMode(app.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
+    // Set initial cursor mode
+    glfwSetInputMode(app.getWindow(), GLFW_CURSOR,
+                     cityConfig.view3D ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     
-    // Create renderer
     CityRenderer renderer(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-    // ----- Shader Compilation (Using ShaderManager) -----
+    
+    // ===== FEATURE SYSTEMS INITIALIZATION =====
+    BuildingLightingSystem buildingLights;          // Feature 1: Window Lights
+    DayNightCycle dayNightCycle(14.0f, true);      // Feature 2: Day/Night Cycle
+    TrafficGenerator trafficSystem;                 // Feature 3: Traffic
+    BuildingPlacementSystem buildingPlacement;      // Feature 4: Click-to-Place
+    // Feature 5 (Save/Load) is used via CitySerializer static methods
+    
+    // ===== SHADERS & TEXTURES =====
     ShaderManager shaderManager;
     if (!shaderManager.compileShaders()) {
         std::cout << "Failed to compile shaders\n";
         return -1;
     }
-
-    // Enable point size for better visibility
+    
     glEnable(GL_PROGRAM_POINT_SIZE);
     glPointSize(2.0f);
-    
-    // Enable depth testing for 3D rendering
     glEnable(GL_DEPTH_TEST);
     
-    // ----- Load Textures (Using TextureManager) -----
     TextureManager textureManager;
     textureManager.loadAllTextures();
     
-    GLuint brickTexture = textureManager.getTexture("brick");
-    GLuint concreteTexture = textureManager.getTexture("concrete");
-    GLuint glassTexture = textureManager.getTexture("glass");
-    GLuint roadTexture = textureManager.getTexture("road");
-    GLuint grassTexture = textureManager.getTexture("grass");
-    GLuint fountainTexture = textureManager.getTexture("fountain");
-
-    // Connect input handler to city generator
     inputHandler.setCityGenerator(&cityGenerator);
-
-    std::cout << "\n✅ OpenGL initialized successfully!\n";
-    std::cout << "Press 'G' to generate a city, or adjust parameters first.\n\n";
-
-    // Track view mode changes
-    bool lastView3D = cityConfig.view3D;
     
-    // ----- Render Loop -----
+    std::cout << "\n✅ All systems initialized!\n";
+    std::cout << "Press 'G' to generate a city.\n";
+    std::cout << "Press 'H' for keyboard controls.\n\n";
+    
+    // ===== RENDER LOOP =====
+    bool lastView3D = cityConfig.view3D;
+    float lastTime = glfwGetTime();
+    float lastTimeOfDay = dayNightCycle.getTimeOfDay();
+    
     while (!app.shouldClose())
     {
-        // Process user input
+        // Calculate delta time
+        float currentTime = glfwGetTime();
+        float deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+        
+        // FEATURE 2: Update Day/Night Cycle
+        dayNightCycle.update(deltaTime);
+        cityConfig.timeOfDay = dayNightCycle.getTimeOfDay();
+        
+        // Process input
         inputHandler.processInput(app.getWindow());
+        inputHandler.processMouseInput(app.getWindow(), SCREEN_WIDTH, SCREEN_HEIGHT);
         
-        // FPP Camera movement (WASD + Shift for sprint)
-        camera.processKeyboard(app.getWindow(), 0.016f); // Assuming ~60 FPS
+        // Check if time was manually changed (via 'M' key)
+        if (cityConfig.timeOfDay != lastTimeOfDay && cityConfig.timeOfDay != dayNightCycle.getTimeOfDay()) {
+            // Manual time change detected - sync to dayNightCycle
+            dayNightCycle.setTimeOfDay(cityConfig.timeOfDay);
+        }
+        lastTimeOfDay = cityConfig.timeOfDay;
+        camera.processKeyboard(app.getWindow(), deltaTime);
         
-        // Check if view mode changed (need to regenerate building buffers)
+        // Handle view mode changes
         bool viewModeChanged = (cityConfig.view3D != lastView3D);
         if (viewModeChanged) {
             lastView3D = cityConfig.view3D;
-            
-            // Toggle cursor mode based on view
-            if (cityConfig.view3D) {
-                // 3D mode: disable cursor for FPP camera control
-                glfwSetInputMode(app.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            } else {
-                // 2D mode: enable cursor for free mouse movement
-                glfwSetInputMode(app.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            glfwSetInputMode(app.getWindow(), GLFW_CURSOR,
+                           cityConfig.view3D ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+        }
+        
+        // FEATURE 5: Handle load request
+        if (inputHandler.loadCityRequested()) {
+            inputHandler.clearLoadRequest();
+            if (CitySerializer::loadCity(cityGenerator.getCityData(), "city_save")) {
+                const CityData& city = cityGenerator.getCityData();
+                renderer.updateCity(city, cityConfig.view3D);
+                
+                if (cityConfig.showTraffic && cityConfig.numCars > 0) {
+                    trafficSystem.generateTraffic(city.roads, cityConfig.numCars,
+                                                 city.parks, city.fountain,
+                                                 SCREEN_WIDTH, SCREEN_HEIGHT);
+                    renderer.updateTraffic(trafficSystem.getTrafficData(), cityConfig.view3D);
+                }
             }
         }
         
-        // If city was generated OR view mode changed, update rendering data
+        // Handle generation request
         if (inputHandler.generationRequested() || viewModeChanged) {
             inputHandler.clearGenerationRequest();
             
             if (cityGenerator.hasCity()) {
                 const CityData& city = cityGenerator.getCityData();
                 renderer.updateCity(city, cityConfig.view3D);
+                
+                // FEATURE 3: Generate traffic
+                if (cityConfig.showTraffic && cityConfig.numCars > 0) {
+                    trafficSystem.generateTraffic(city.roads, cityConfig.numCars,
+                                                 city.parks, city.fountain,
+                                                 SCREEN_WIDTH, SCREEN_HEIGHT);
+                    renderer.updateTraffic(trafficSystem.getTrafficData(), cityConfig.view3D);
+                }
+                
+                // Show keyboard controls after generation
+                if (!viewModeChanged) {  // Only show on actual generation, not view mode change
+                    InputHandler::displayControls();
+                }
             }
         }
         
-        // Dark background (like a city at dusk)
-        glClearColor(0.1f, 0.15f, 0.2f, 1.0f);
+        // FEATURE 3: Update traffic
+        if (trafficSystem.hasTraffic() && cityGenerator.hasCity()) {
+            const CityData& city = cityGenerator.getCityData();
+            trafficSystem.updateTraffic(deltaTime, city.roads);
+            renderer.updateTraffic(trafficSystem.getTrafficData(), cityConfig.view3D);
+        }
+        
+        // FEATURE 4: Handle building placement
+        if (inputHandler.buildingPlacementPending() && cityGenerator.hasCity()) {
+            double mouseX, mouseY;
+            inputHandler.getBuildingPlacementPos(mouseX, mouseY);
+            inputHandler.clearBuildingPlacement();
+            
+            CityData& city = cityGenerator.getCityData();
+            if (buildingPlacement.tryPlaceBuilding((float)mouseX, (float)mouseY,
+                                                   city.buildings, city.roads,
+                                                   city.parks, city.fountain,
+                                                   cityConfig, SCREEN_WIDTH, SCREEN_HEIGHT)) {
+                renderer.updateCity(city, cityConfig.view3D);
+            }
+        }
+        
+        // FEATURE 2: Set sky color
+        glm::vec3 skyColor = cityConfig.view3D ?
+            dayNightCycle.getSkyColor() : dayNightCycle.getSkyColor2D();
+        
+        glClearColor(skyColor.r, skyColor.g, skyColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        
+        // Setup shaders
         shaderManager.use();
+        shaderManager.setTimeOfDay(cityConfig.timeOfDay);
         
-        // Setup view and projection matrices based on view mode
+        // Setup camera matrices
         glm::mat4 view, projection;
-        
         if (cityConfig.view3D) {
-            // 3D perspective view
-            projection = glm::perspective(glm::radians(45.0f), 
+            projection = glm::perspective(glm::radians(45.0f),
                 (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
             view = camera.getViewMatrix();
         } else {
-            // 2D orthographic view
             projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 10.0f);
-            view = glm::mat4(1.0f);  // Identity matrix
+            view = glm::mat4(1.0f);
         }
         
         shaderManager.setView(glm::value_ptr(view));
         shaderManager.setProjection(glm::value_ptr(projection));
-
-        // Render the city if generated
+        
+        // Render city
         if (cityGenerator.hasCity() && renderer.isReady()) {
             const CityData& city = cityGenerator.getCityData();
             renderer.render(city, cityConfig, cityConfig.view3D, shaderManager,
-                          brickTexture, concreteTexture, glassTexture,
-                          roadTexture, grassTexture, fountainTexture);
+                          textureManager.getTexture("brick"),
+                          textureManager.getTexture("concrete"),
+                          textureManager.getTexture("glass"),
+                          textureManager.getTexture("road"),
+                          textureManager.getTexture("grass"),
+                          textureManager.getTexture("fountain"));
+            
+            if (trafficSystem.hasTraffic()) {
+                renderer.renderTraffic(trafficSystem.getTrafficData(), cityConfig,
+                                      cityConfig.view3D, shaderManager);
+            }
         }
-
+        
         app.update();
     }
     
-    // Cleanup - All resources automatically cleaned up by destructors:
-    // - Application handles GLFW termination
-    // - CityRenderer handles VAO/VBO cleanup
-    // - TextureManager handles texture cleanup
-    // - ShaderManager handles shader cleanup
-    // - Camera has no GPU resources
-
+    // Cleanup handled by destructors
     return 0;
 }

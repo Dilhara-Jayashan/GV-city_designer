@@ -19,6 +19,7 @@
 #include <glad/glad.h>
 #include <vector>
 #include "generation/city_generator.h"
+#include "features/traffic_system/traffic_generator.h"
 #include "rendering/shaders/shader_manager.h"
 #include "core/city_config.h"
 
@@ -57,6 +58,15 @@ public:
     void updateCity(const CityData& city, bool view3D);
     
     /**
+     * @brief Update traffic rendering buffers
+     * @param trafficData Traffic data to render
+     * @param view3D Whether to use 3D rendering mode
+     * 
+     * Updates only traffic-related buffers without regenerating city.
+     */
+    void updateTraffic(const TrafficData& trafficData, bool view3D);
+    
+    /**
      * @brief Render the city
      * @param city City data
      * @param config City configuration (includes texture theme)
@@ -72,6 +82,15 @@ public:
     void render(const CityData& city, const CityConfig& config, bool view3D, ShaderManager& shaderManager,
                 GLuint brickTexture, GLuint concreteTexture, GLuint glassTexture,
                 GLuint roadTexture, GLuint grassTexture, GLuint fountainTexture);
+    
+    /**
+     * @brief Render traffic (cars)
+     * @param trafficData Traffic data
+     * @param config City configuration
+     * @param view3D Whether to use 3D mode
+     * @param shaderManager Shader manager for rendering
+     */
+    void renderTraffic(const TrafficData& trafficData, const CityConfig& config, bool view3D, ShaderManager& shaderManager);
     
     /**
      * @brief Check if rendering data is ready
@@ -103,6 +122,19 @@ private:
     GLuint fountain3DVAO;
     GLuint fountain3DVBO;
     int fountain3DVertexCount;
+    
+    // 3D mesh rendering buffers - Fountain Lights
+    GLuint fountainLights3DVAO;
+    GLuint fountainLights3DVBO;
+    int fountainLights3DVertexCount;
+    
+    // Traffic rendering buffers
+    std::vector<GLuint> traffic3DVAOs;
+    std::vector<GLuint> traffic3DVBOs;
+    std::vector<int> traffic3DVertexCounts;
+    std::vector<GLuint> trafficVAOs;      // 2D traffic
+    std::vector<GLuint> trafficVBOs;      // 2D traffic
+    std::vector<int> trafficVertexCounts; // 2D traffic
     
     /**
      * @brief Cleanup all rendering buffers
@@ -151,9 +183,10 @@ private:
      * @param fountainTexture Fountain texture ID
      * @param fountainOffset Offset in VAO array
      * @param fountainCount Number of fountains (0 or 1)
+     * @param timeOfDay Current time of day (0-24 hours)
      */
     void renderFountain(const CityData& city, bool view3D, ShaderManager& shaderManager,
-                        GLuint fountainTexture, size_t fountainOffset, size_t fountainCount);
+                        GLuint fountainTexture, size_t fountainOffset, size_t fountainCount, float timeOfDay);
     
     /**
      * @brief Render buildings (both 2D and 3D)

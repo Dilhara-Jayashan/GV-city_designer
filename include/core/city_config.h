@@ -82,6 +82,14 @@ struct CityConfig {
     // ===== View Mode =====
     bool view3D;                ///< Toggle: false=2D orthographic, true=3D perspective
     
+    // ===== Time of Day =====
+    float timeOfDay;            ///< Time in hours (0-24): 0=midnight, 6=sunrise, 12=noon, 18=sunset
+    bool autoTimeProgress;      ///< If true, time advances automatically
+    
+    // ===== Traffic Parameters =====
+    int numCars;                ///< Number of cars for traffic animation (0-50)
+    bool showTraffic;           ///< Toggle traffic visibility
+    
     /**
      * @brief Construct a new City Config with sensible defaults
      * 
@@ -105,7 +113,11 @@ struct CityConfig {
           useStandardSize(true),
           standardWidth(50.0f),
           standardDepth(50.0f),
-          view3D(false)
+          view3D(false),
+          timeOfDay(14.0f),         // Start at 2 PM (afternoon)
+          autoTimeProgress(true),   // Automatic time progression enabled
+          numCars(15),              // Default 15 cars
+          showTraffic(true)         // Traffic enabled by default
     {
         // Initialize building size based on default layout
         updateStandardBuildingSize();

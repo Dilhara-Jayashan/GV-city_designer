@@ -36,6 +36,8 @@ private:
     GLint projectionLocation;
     GLint useTextureLocation;
     GLint is2DLocation;
+    GLint showWindowLightsLocation;
+    GLint timeOfDayLocation;
     
 public:
     /**
@@ -82,6 +84,8 @@ public:
     void setProjection(const float* projectionMatrix) const;
     void setUseTexture(bool use) const;
     void setIs2D(bool is2D) const;
+    void setShowWindowLights(bool show) const;
+    void setTimeOfDay(float time) const;
     
     // Get uniform locations (for advanced usage)
     GLint getColorLocation() const { return colorLocation; }

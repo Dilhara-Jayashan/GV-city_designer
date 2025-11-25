@@ -1,9 +1,13 @@
 #include "utils/input_handler.h"
 #include "generation/city_generator.h"
+#include "features/save_load/city_serializer.h"
 #include <iostream>
 #include <cstring>
 
-InputHandler::InputHandler(CityConfig& cfg) : config(cfg), cityGen(nullptr), genRequested(false) {
+InputHandler::InputHandler(CityConfig& cfg) 
+    : config(cfg), cityGen(nullptr), genRequested(false), 
+      mouseButtonPressed(false), lastMouseX(0), lastMouseY(0), 
+      buildingPlacementRequested(false), loadRequested(false) {
     // Initialize key states
     std::memset(keysPressed, 0, sizeof(keysPressed));
 }
@@ -137,6 +141,20 @@ void InputHandler::processInput(GLFWwindow* window) {
         std::cout << "Fountain Radius: " << config.fountainRadius << "\n";
     }
     
+    // === TIME OF DAY CONTROLS ===
+    // N - Toggle day/night cycle auto-progression
+    if (isKeyJustPressed(window, GLFW_KEY_N)) {
+        config.autoTimeProgress = !config.autoTimeProgress;
+        std::cout << "Auto Time: " << (config.autoTimeProgress ? "ON" : "OFF") << "\n";
+    }
+    
+    // M - Manual time control (skip forward 2 hours)
+    if (isKeyJustPressed(window, GLFW_KEY_M)) {
+        config.timeOfDay += 2.0f;
+        if (config.timeOfDay >= 24.0f) config.timeOfDay -= 24.0f;
+        std::cout << "Time: " << static_cast<int>(config.timeOfDay) << ":00\n";
+    }
+    
     // === VIEW MODE ===
     // V - Toggle 2D/3D view
     if (isKeyJustPressed(window, GLFW_KEY_V)) {
@@ -150,6 +168,20 @@ void InputHandler::processInput(GLFWwindow* window) {
         if (cityGen) {
             cityGen->generateCity(config);
         }
+    }
+    
+    // Z - Save current city
+    if (isKeyJustPressed(window, GLFW_KEY_Z)) {
+        if (cityGen && cityGen->hasCity()) {
+            CitySerializer::saveCity(cityGen->getCityData(), "city_save");
+        } else {
+            std::cout << "⚠️  No city to save! Generate a city first (press G).\n";
+        }
+    }
+    
+    // X - Load saved city
+    if (isKeyJustPressed(window, GLFW_KEY_X)) {
+        loadRequested = true;
     }
 }
 
@@ -180,12 +212,56 @@ void InputHandler::displayControls() {
     std::cout << "║    9/0  : Decrease/Increase number of parks               ║\n";
     std::cout << "║    F    : Toggle fountain size (small/large)              ║\n";
     std::cout << "║                                                           ║\n";
+    std::cout << "║  TIME OF DAY:                                             ║\n";
+    std::cout << "║    N    : Toggle auto day/night cycle                     ║\n";
+    std::cout << "║    M    : Manual time advance (+2 hours)                  ║\n";
+    std::cout << "║                                                           ║\n";
     std::cout << "║  VIEW & GENERATION:                                       ║\n";
     std::cout << "║    V    : Toggle 2D/3D view mode                          ║\n";
     std::cout << "║    G    : Generate new city with current settings         ║\n";
+    std::cout << "║    Z    : Save current city to file                       ║\n";
+    std::cout << "║    X    : Load saved city from file                       ║\n";
     std::cout << "║    P    : Print current configuration                     ║\n";
     std::cout << "║    H    : Display this help menu                          ║\n";
     std::cout << "║    ESC  : Exit application                                ║\n";
+    std::cout << "║                                                           ║\n";
+    std::cout << "║  3D NAVIGATION (3D mode only):                            ║\n";
+    std::cout << "║    W/A/S/D : Move forward/left/backward/right             ║\n";
+    std::cout << "║    SHIFT   : Sprint (faster movement)                     ║\n";
+    std::cout << "║    MOUSE   : Look around (camera rotation)                ║\n";
+    std::cout << "║ Make sure put mouse in middle of the screen when move to  ║\n";
+    std::cout << "║ 3d view (if you can not find check 360 around you)        ║\n";
+    std::cout << "║                                                           ║\n";
+    std::cout << "║  2D BUILDING PLACEMENT:                                   ║\n";
+    std::cout << "║    LEFT CLICK: Place building at cursor (2D mode only)    ║\n";
     std::cout << "╚═══════════════════════════════════════════════════════════╝\n";
     std::cout << "\n";
+}
+
+// Process mouse input for building placement
+void InputHandler::processMouseInput(GLFWwindow* window, int screenWidth, int screenHeight) {
+    // Only process mouse clicks in 2D mode
+    if (config.view3D) {
+        return;
+    }
+    
+    // Check left mouse button
+    int mouseState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+    
+    // Detect mouse button press (not held)
+    if (mouseState == GLFW_PRESS && !mouseButtonPressed) {
+        // Get cursor position
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        
+        // Store position and mark placement as requested
+        lastMouseX = xpos;
+        lastMouseY = ypos;
+        buildingPlacementRequested = true;
+        
+        std::cout << "🏢 Building placement requested at (" << (int)xpos << ", " << (int)ypos << ")\n";
+    }
+    
+    // Update button state
+    mouseButtonPressed = (mouseState == GLFW_PRESS);
 }

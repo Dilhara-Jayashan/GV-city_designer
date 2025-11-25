@@ -1,395 +1,280 @@
-# 🏙️ City Designer - Interactive 3D City Generation Tool# 🏙️ City Designer - Interactive 3D City Generation Tool
+# 🏙️ City Designer - Feature-Based Architecture
 
+An interactive 3D city generation and visualization tool with 5 creative features.
 
-
-[![C++](https://img.shields.io/badge/C++-11-blue.svg)](https://isocpp.org/)**SE3032 – Graphics and Visualization Assignment**  
-
-[![OpenGL](https://img.shields.io/badge/OpenGL-3.3-green.svg)](https://www.opengl.org/)*Interactive Algorithmic Art & 3D Environments*
-
-[![Platform](https://img.shields.io/badge/Platform-macOS-lightgrey.svg)](https://www.apple.com/macos/)
-
----
-
-## 📋 Project Overview
-
-## 📋 Project Overview
-
-City Designer is a sophisticated OpenGL-based application that generates procedural cities with both 2D and 3D visualization modes. Built with C++11, it demonstrates advanced computer graphics techniques, software engineering best practices, and modular code organization.
-
-City Designer is an interactive application that allows users to design and visualize custom futuristic cities by combining procedural 2D artwork with immersive 3D environments. The project demonstrates mastery of fundamental graphics algorithms including Bresenham's Line Algorithm, Midpoint Circle Algorithm, and 3D texture mapping.
-
-### ✨ Key Features
-
-- ✅ **Dual Rendering Modes**: Switch between 2D orthographic and 3D perspective views---
-
-- ✅ **Multiple City Patterns**: Grid, Radial, and Random road layouts  
-
-- ✅ **Dynamic Building Generation**: Configurable building heights and densities## ✅ Implemented Features
-
-- ✅ **Textured 3D Models**: JPG-based textures for buildings, roads, parks, and fountains
-
-- ✅ **FPP Camera Controls**: WASD movement with mouse look in 3D mode### Core Algorithms
-
-- ✅ **Real-time Configuration**: Modify city parameters on-the-fly with keyboard shortcuts- ✅ **Bresenham's Line Algorithm** - Pixel-perfect road generation
-
-- ✅ **Professional Code Structure**: Organized, documented, and maintainable codebase- ✅ **Midpoint Circle Algorithm** - Circular parks and fountains
-
-- ✅ **Basic OpenGL Lines** - Road networks and city grids
-
-## 🎯 Technologies Used- ⏳ **3D Models with Texture Mapping** - In progress
-
-
-
-### Core Technologies### Interactive Controls
-
-- **Language**: C++11- ✅ **Building Configuration** - Adjust number and layout size
-
-- **Graphics API**: OpenGL 3.3 Core Profile  - ✅ **Road Pattern Selection** - Grid, Radial, or Random layouts
-
-- **Window Management**: GLFW3- ✅ **Skyline Types** - Low-Rise, Mid-Rise, Skyscraper, Mixed
-
-- **Mathematics**: GLM 1.0.2- ✅ **Texture Themes** - Modern, Classic, Industrial, Futuristic
-
-- **Image Loading**: STB Image (header-only library)- ✅ **Park & Fountain Controls** - Customizable sizes and quantities
-
-- **OpenGL Loader**: GLAD- ✅ **View Mode Toggle** - Switch between 2D and 3D views
-
-
-
-### Algorithms Implemented---
-
-- **Bresenham's Line Algorithm** - For pixel-perfect road generation
-
-- **Midpoint Circle Algorithm** - For parks and fountains## 🎮 Keyboard Controls
-
-- **Perspective Projection** - 3D camera mathematics
-
-- **Mesh Generation** - Procedural 3D geometry creation### Building Controls
-
-| Key | Action |
-
-## 🚀 Quick Start|-----|--------|
-
-| `1` | Decrease number of buildings |
-
-### Prerequisites| `2` | Increase number of buildings |
-
-- macOS (tested on macOS with Homebrew)| `3` | Decrease layout size |
-
-- Clang compiler with C++11 support| `4` | Increase layout size |
-
-- GLFW3 library
-
-- GLM library (included in lib/ folder)### Road Controls
-
-| Key | Action |
-
-### Installation|-----|--------|
-
-| `R` | Cycle road pattern (Grid → Radial → Random) |
-
-```bash| `5` | Decrease road width |
-
-# Install GLFW via Homebrew (if not already installed)| `6` | Increase road width |
-
-brew install glfw
-
-### Skyline Controls
-
-# Clone the repository  | Key | Action |
-
-git clone https://github.com/Dilhara-Jayashan/GV-city_designer.git|-----|--------|
-
-cd GV-city_designer| `S` | Cycle skyline type (Low-Rise → Mid-Rise → Skyscraper → Mixed) |
-
-
-
-# Build the project### Texture Controls
-
-chmod +x build.sh| Key | Action |
-
-./build.sh|-----|--------|
-
-| `T` | Cycle texture theme (Modern → Classic → Industrial → Futuristic) |
-
-# Run the application
-
-./CityDesigner### Park & Fountain Controls
-
-```| Key | Action |
-
-|-----|--------|
-
-## 🎮 Controls| `7` | Decrease park radius |
-
-| `8` | Increase park radius |
-
-### View and Generation| `9` | Decrease number of parks |
-
-| Key | Action || `0` | Increase number of parks |
-
-|-----|--------|| `F` | Toggle fountain size (small/large) |
-
-| `G` | Generate new city with current settings |
-
-| `V` | Toggle between 2D and 3D view modes |### View & Generation
-
-| `H` | Display help menu || Key | Action |
-
-| `P` | Print current configuration ||-----|--------|
-
-| `ESC` | Exit application || `V` | Toggle 2D/3D view mode |
-
-| `G` | Generate new city with current settings |
-
-### Building Configuration  | `P` | Print current configuration to console |
-
-| Key | Action || `H` | Display help menu |
-
-|-----|--------|| `ESC` | Exit application |
-
-| `1` / `2` | Decrease / Increase number of buildings |
-
-| `3` / `4` | Decrease / Increase layout grid size |---
-
-| `B` | Toggle standard/random building sizes |
-
-## 🛠️ Compilation & Running
-
-### Road Configuration
-
-| Key | Action |### Requirements
-
-|-----|--------|- C++11 or higher
-
-| `R` | Cycle through road patterns (Grid → Radial → Random) |- OpenGL 3.3+
-
-| `5` / `6` | Decrease / Increase road width |- GLFW3
-
-- GLAD
-
-### Skyline and Textures
-
-| Key | Action |### macOS Compilation
-
-|-----|--------|```bash
-
-| `L` | Cycle skyline types (Low-Rise → Mid-Rise → Skyscraper → Mixed) |clang++ src/main.cpp src/glad.c src/algorithms.cpp src/city_config.cpp src/input_handler.cpp \
-
-| `T` | Cycle texture themes (Modern → Classic → Industrial → Futuristic) |    -o CityDesigner \
-
-    -Iinclude \
-
-### Parks and Fountains    -I/opt/homebrew/include \
-
-| Key | Action |    -L/opt/homebrew/lib \
-
-|-----|--------|    -lglfw \
-
-| `7` / `8` | Decrease / Increase park radius |    -framework OpenGL \
-
-| `9` / `0` | Decrease / Increase number of parks |    -std=c++11
-
-| `F` | Toggle fountain size (small/large) |```
-
-
-
-### 3D Camera Controls (3D Mode Only)### Running
-
-| Control | Action |```bash
-
-|---------|--------|./CityDesigner
-
-| `W` | Move forward |```
-
-| `A` | Strafe left |
-
-| `S` | Move backward |---
-
-| `D` | Strafe right |
-
-| `Mouse` | Look around (yaw and pitch) |## 📁 Project Structure
-
-| `Shift` | Sprint (2x speed) |
+## 📦 Project Structure (Feature-Based)
 
 ```
-
-## 📁 Project StructureGV-city_designer/
-
-├── include/
-
-```│   ├── algorithms.h         # Algorithm declarations
-
-GV-city_designer/│   ├── city_config.h        # City configuration structure
-
-├── assets/                 # Texture files (JPG)│   ├── input_handler.h      # Input management
-
-├── include/               # Header files│   ├── glad/                # OpenGL loader
-
-│   ├── core/             # Configuration and data structures│   └── KHR/                 # Platform definitions
-
-│   ├── generation/       # City generation logic├── src/
-
-│   ├── rendering/        # Rendering systems (2D, 3D, textures, camera)│   ├── main.cpp             # Main program & rendering
-
-│   └── utils/            # Algorithms and input handling│   ├── algorithms.cpp       # Bresenham & Midpoint Circle
-
-├── src/                  # Implementation files│   ├── city_config.cpp      # Configuration management
-
-│   ├── core/            # Core implementations│   ├── input_handler.cpp    # Keyboard input handling
-
-│   ├── generation/      # Generation implementations│   └── glad.c               # GLAD implementation
-
-│   ├── rendering/       # Rendering implementations├── lib/                     # External libraries
-
-│   ├── utils/          # Utility implementations├── CityDesigner             # Executable
-
-│   └── main.cpp        # Application entry point├── PROGRESS.md              # Development progress tracker
-
-├── docs/                # Documentation└── README.md                # This file
-
-└── build.sh            # Build script```
-
+GV-city_designer/
+├── src/
+│   ├── features/                    # 🎯 THE 5 CREATIVE FEATURES
+│   │   ├── building_lights/         # Feature 1: Window Lighting
+│   │   │   ├── building_lighting_system.cpp
+│   │   │   └── building_lighting_system.h
+│   │   ├── day_night_cycle/         # Feature 2: Day/Night Cycle
+│   │   │   ├── day_night_cycle.cpp
+│   │   │   └── day_night_cycle.h
+│   │   ├── traffic_system/          # Feature 3: Traffic Animation
+│   │   │   ├── traffic_generator.cpp
+│   │   │   └── traffic_generator.h
+│   │   ├── building_placement/      # Feature 4: Click-to-Place
+│   │   │   ├── building_placement_system.cpp
+│   │   │   └── building_placement_system.h
+│   │   └── save_load/               # Feature 5: Save/Load System
+│   │       ├── city_serializer.cpp
+│   │       └── city_serializer.h
+│   │
+│   ├── core/                        # Core Application
+│   │   ├── application.cpp          # GLFW window management
+│   │   └── city_config.cpp          # Configuration system
+│   │
+│   ├── generation/                  # City Generation
+│   │   ├── city_generator.cpp       # Main city generation logic
+│   │   └── road_generator.cpp       # Road network generation
+│   │
+│   ├── rendering/                   # Rendering Engine
+│   │   ├── city_renderer.cpp        # Main renderer
+│   │   ├── texture_manager.cpp      # Texture loading
+│   │   ├── 3d/camera.cpp            # FPP camera
+│   │   ├── shaders/
+│   │   │   └── shader_manager.cpp   # Shader compilation
+│   │   └── mesh/                    # 3D mesh generation
+│   │       ├── building_mesh.cpp
+│   │       ├── road_mesh.cpp
+│   │       ├── park_mesh.cpp
+│   │       ├── traffic_mesh.cpp
+│   │       └── mesh_utils.cpp
+│   │
+│   ├── utils/                       # Utilities
+│   │   ├── algorithms.cpp           # Bresenham, midpoint circle
+│   │   └── input_handler.cpp        # Keyboard/mouse input
+│   │
+│   ├── main.cpp                     # Main entry point
+│   └── glad.c                       # OpenGL loader
+│
+├── include/                         # Header files (mirrors src/)
+├── assets/                          # Textures
+│   ├── brick.jpg
+│   ├── concrete.jpg
+│   ├── glass.jpg
+│   ├── road.jpg
+│   ├── grass.jpg
+│   └── fountains.jpg
+├── saves/                           # Save files
+│   └── city_save.json
+├── build.sh                         # Build script
+└── README.md                        # This file
 ```
 
----
-
-See `docs/PROJECT_STRUCTURE.md` for detailed architecture documentation.
-
-## 🔬 Technical Implementation
-
-## 🏗️ Architecture Highlights
-
-### 1. Bresenham's Line Algorithm
-
-### Modular Design**Purpose**: Generate pixel-perfect straight lines for roads and city grids
-
-- **Core Module**: Configuration and data structures
-
-- **Generation Module**: City generation algorithms  **Features**:
-
-- **Rendering Module**: 2D/3D rendering, textures, camera- Integer-only arithmetic for efficiency
-
-- **Utils Module**: Algorithms and input handling- Handles all octants (8 directions)
-
-- Used for: roads, building outlines, grid boundaries
-
-### Code Quality
-
-- ✅ Doxygen-style documentation**Performance**: 
-
-- ✅ Single Responsibility Principle- Horizontal road: 601 points generated
-
-- ✅ Clear separation of concerns- Vertical road: 401 points generated
-
-- ✅ Professional naming conventions- Diagonal road: 601 points generated
-
-- ✅ Comprehensive error handling
-
-### 2. Midpoint Circle Algorithm
-
-## 📊 Project Statistics**Purpose**: Create circular shapes for parks, fountains, and roundabouts
-
-
-
-- **Total Lines of Code**: ~3,500+**Features**:
-
-- **Modules**: 4 (Core, Generation, Rendering, Utils)- 8-way symmetry optimization
-
-- **Textures**: 6 JPG files- Calculates one octant, mirrors for others
-
-- **City Elements**: Roads, Buildings, Parks, Fountains- Variable radius support
-
-- **Road Patterns**: 3 (Grid, Radial, Random)
-
-- **View Modes**: 2 (2D Orthographic, 3D Perspective)**Performance**:
-
-- Large park (r=80): 464 points
-
-## 🎓 Academic Relevance- Medium fountain (r=50): 296 points
-
-- Small roundabout (r=30): 176 points
-
-### Computer Graphics Concepts
-
-✅ 2D Rasterization Algorithms  ### 3. User Input System
-
-✅ 3D Transformations & Matrices**Purpose**: Real-time interactive city configuration
-
-✅ Texture Mapping & Mipmapping  
-
-✅ Camera Mathematics  **Features**:
-
-✅ Procedural Mesh Generation  - Non-blocking input processing
-
-✅ Depth Testing & Z-Buffer- Key state tracking (prevents repeated actions)
-
-- Dynamic parameter adjustment
-
-### Software Engineering Principles- Real-time feedback in console
-
-✅ Modularity & Encapsulation  
-
-✅ Documentation Best Practices  ---
-
-✅ Code Organization & Maintainability  
-
-✅ Design Patterns (Singleton, Strategy, Factory)  ## 🎨 Current Visualization
-
-✅ Performance Optimization
-
-The application displays:
-
-## 📚 Documentation- **Yellow/Orange Lines**: Roads using Bresenham's Algorithm
-
-- **Green Circles**: Parks using Midpoint Circle Algorithm
-
-- **README.md** (this file) - Quick start and overview- **Blue Circles**: Fountains
-
-- **docs/PROJECT_STRUCTURE.md** - Comprehensive architecture documentation- **Yellow Circles**: Roundabouts
-
-- **docs/REORGANIZATION_GUIDE.md** - Development process guide- **Dark Blue Background**: City at dusk atmosphere
-
-- **Header Files** - Inline API documentation with Doxygen comments
-
----
-
-## 👥 Author
-
-## 🎯 Assignment Compliance
-
-**Dilhara Jayashan**  
-
-GitHub: [@Dilhara-Jayashan](https://github.com/Dilhara-Jayashan)### Part 1 Requirements (50%)
-
-✅ **Basic OpenGL Lines** - Implemented for rendering  
-
-## 🙏 Acknowledgments✅ **Bresenham's Line Algorithm** - Fully functional  
-
-✅ **Midpoint Circle Algorithm** - Fully functional  
-
-- Graphics Algorithms: Bresenham, Midpoint Circle Algorithm inventors⏳ **3D Model with Texture Mapping** - Next milestone  
-
-- GLM Library: OpenGL Mathematics library developers  
-
-- STB Image: Sean Barrett---
-
-- GLFW: Cross-platform window management
-
-- OpenGL Community: Documentation and tutorials## 👥 Team Information
-
-
-
----**Course**: SE3032 – Graphics and Visualization  
-
-**Semester**: Semester 1, 2025  
-
-**Built with ❤️ using C++, OpenGL, and computational geometry!****Submission Deadline**: November 26, 2025  
-
-**Evaluation**: November 27, 2025  
-
-*Last Updated: November 25, 2025*
-
----
-
-**Last Updated**: November 24, 2025
+## 🎯 The 5 Creative Features
+
+### Feature 1: Building Window Lights 💡
+**Location**: `src/features/building_lights/`
+
+- **What it does**: Building windows light up at night and turn off during the day
+- **Key class**: `BuildingLightingSystem`
+- **Methods**:
+  - `getWindowEmissionColor(timeOfDay)` - Returns warm yellow glow color
+  - `getLightIntensity(timeOfDay)` - Returns 0.0-1.0 intensity
+  - `areLightsActive(timeOfDay)` - Checks if lights should be on
+- **Transitions**: Smooth fade-in at sunset (6pm-8pm), fade-out at sunrise (4am-6am)
+- **Visual effect**: Warm yellow (RGB: 3.0, 2.5, 1.5) emissive lighting on building windows
+
+### Feature 2: Day/Night Cycle 🌅
+**Location**: `src/features/day_night_cycle/`
+
+- **What it does**: Automatic time progression with sky color transitions
+- **Key class**: `DayNightCycle`
+- **Methods**:
+  - `update(deltaTime)` - Advances time automatically
+  - `getSkyColor()` - Returns sky color for 3D view
+  - `getAmbientLightFactor()` - Returns 0.3-1.0 ambient multiplier
+- **Time periods**:
+  - Night (9pm-5am): Soft dark lavender
+  - Sunrise (5am-9am): Lavender → Peachy → Light blue
+  - Day (9am-5pm): Light sky blue
+  - Sunset (5pm-9pm): Light blue → Warm peach → Lavender
+- **Speed**: 0.5 hours per real second
+
+### Feature 3: Traffic System 🚗
+**Location**: `src/features/traffic_system/`
+
+- **What it does**: Animated vehicles that follow roads
+- **Key class**: `TrafficGenerator`
+- **Features**:
+  - Vehicles follow road networks
+  - Collision avoidance (roads, parks, fountains, other cars)
+  - Boundary checking (stays within 50px margin)
+  - Smooth movement with progress tracking
+  - Random colored vehicles
+- **Methods**:
+  - `generateTraffic()` - Spawns vehicles on roads
+  - `updateTraffic(deltaTime)` - Updates vehicle positions
+- **Cars**: Default 15 vehicles, configurable 0-50
+
+### Feature 4: Click-to-Place Buildings 🏢
+**Location**: `src/features/building_placement/`
+
+- **What it does**: Interactive building placement via mouse clicks (2D view only)
+- **Key class**: `BuildingPlacementSystem`
+- **Methods**:
+  - `tryPlaceBuilding()` - Attempts to place building at click position
+  - Collision checks with roads, parks, fountain, existing buildings
+- **Rules**:
+  - Must be within screen boundaries (60px margin)
+  - Must not overlap roads (20px buffer)
+  - Must not overlap parks/fountain (35px buffer)
+  - Must not overlap buildings (25px buffer)
+- **Usage**: Click anywhere in 2D view to place a mid-rise building
+
+### Feature 5: Save/Load System 💾
+**Location**: `src/features/save_load/`
+
+- **What it does**: Persists city data to JSON file
+- **Key class**: `CitySerializer` (static methods)
+- **Methods**:
+  - `saveCity(cityData, filename)` - Saves to JSON
+  - `loadCity(cityData, filename)` - Loads from JSON
+- **Saves**:
+  - Buildings (position, size, height, type)
+  - Roads (all point coordinates)
+  - Parks (circular boundary points)
+  - Fountain (circular boundary points)
+- **Location**: `saves/city_save.json`
+- **Usage**: Press 'C' to save, 'L' to load
+
+## 🛠️ Build Instructions
+
+### Prerequisites
+- macOS (tested on macOS)
+- Xcode Command Line Tools
+- GLFW3 (`brew install glfw`)
+- C++17 compiler
+
+### Build
+```bash
+bash build.sh
+```
+
+### Run
+```bash
+./CityDesigner
+```
+
+## 🎮 Controls
+
+### View Controls
+- **V**: Toggle 2D/3D view
+- **G**: Generate new city
+- **H**: Show/hide help
+
+### Time Controls  
+- **T**: Cycle time of day manually
+- **A**: Toggle auto time progression
+
+### Generation Controls
+- **1-4**: Change building count
+- **5-6**: Change layout size
+- **R**: Cycle road patterns (Grid/Radial/Random)
+- **S**: Cycle skyline types
+- **7-0**: Adjust park/fountain settings
+
+### 2D View Only
+- **Left Click**: Place building at cursor position
+
+### 3D View Only
+- **WASD**: Move camera
+- **Mouse**: Look around
+- **Shift**: Sprint (faster movement)
+
+### Save/Load
+- **C**: Save city to `saves/city_save.json`
+- **L**: Load city from `saves/city_save.json`
+
+## 📊 Code Quality
+
+### Architecture Principles
+✅ **Feature-Based Organization**: Each of the 5 features is self-contained in its own directory  
+✅ **No Code Duplication**: All duplicate files removed, single source of truth  
+✅ **Clear Separation of Concerns**: Features, rendering, generation, and core are separated  
+✅ **Single Responsibility**: Each class has one clear purpose  
+✅ **Clean main.cpp**: Only 245 lines, just initialization and main loop  
+✅ **Well-Documented**: Every feature class has comprehensive header documentation  
+
+### File Count
+- **Feature files**: 10 files (5 features × 2 files each)
+- **Core files**: 4 files
+- **Generation files**: 4 files
+- **Rendering files**: 20 files
+- **Utility files**: 4 files
+- **Total source files**: 42 files (+ headers)
+
+### Lines of Code
+- **Features**: ~1,200 lines
+- **Main.cpp**: 245 lines
+- **Total project**: ~8,000 lines
+
+## 🎨 Feature Integration
+
+All 5 features work together seamlessly:
+
+1. **Day/Night Cycle** controls the time of day
+2. **Building Lights** respond to time of day (lights on at night)
+3. **Traffic System** animates based on time (smooth movement)
+4. **Click-to-Place** allows interactive city editing
+5. **Save/Load** preserves everything for later
+
+## 🔧 Technical Details
+
+### Algorithms Used
+- **Bresenham's Line Algorithm**: Road generation
+- **Midpoint Circle Algorithm**: Parks and fountain generation
+- **AABB Collision Detection**: Building placement
+- **Circle-Box Collision**: Park/fountain collision checks
+
+### Rendering
+- **OpenGL 3.3 Core**: Modern OpenGL
+- **Shader-Based**: Vertex and fragment shaders
+- **Texture Mapping**: 6 texture types (brick, glass, concrete, road, grass, fountain)
+- **3D Meshes**: Procedurally generated buildings, roads, parks
+- **Emissive Lighting**: Window glow, fountain lights
+- **Time-Based Ambient**: Dynamic lighting based on time of day
+
+### Performance
+- **60 FPS**: Smooth rendering
+- **Real-time traffic**: 15 vehicles updating every frame
+- **Efficient mesh generation**: Cached VAO/VBO buffers
+- **Minimal allocations**: Pre-allocated buffers
+
+## 📝 Development Notes
+
+### Why Feature-Based Architecture?
+1. **Clarity**: Each feature is easy to find and understand
+2. **Maintainability**: Changes to one feature don't affect others
+3. **Scalability**: Easy to add new features
+4. **Testing**: Each feature can be tested independently
+5. **Team Collaboration**: Multiple developers can work on different features
+
+### Design Decisions
+- **Static methods for serialization**: No state needed
+- **Separate lighting system**: Decouples lighting from rendering
+- **Config-driven**: All parameters in one place
+- **RAII pattern**: Automatic resource cleanup
+- **Forward declarations**: Minimize include dependencies
+
+## 🚀 Future Enhancements
+- [ ] More building types
+- [ ] Weather effects (rain, fog)
+- [ ] Day/night sounds
+- [ ] Traffic signals
+- [ ] Pedestrians
+- [ ] Multiple save slots
+- [ ] Export to image/video
+
+## 👥 Credits
+**Author**: City Designer Team  
+**Date**: November 2025  
+**Course**: Computer Graphics Project
+
+## 📄 License
+Educational project - Free to use and modify

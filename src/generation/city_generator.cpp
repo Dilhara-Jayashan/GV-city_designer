@@ -406,3 +406,64 @@ bool CityGenerator::isValidBuildingPosition(float x, float y, float width, float
     
     return true; // Position is valid - no overlaps detected
 }
+
+// Place a building at specific coordinates (for interactive placement)
+bool CityGenerator::placeBuilding(float x, float y, const CityConfig& config) {
+    if (!cityData.isGenerated) {
+        std::cout << "⚠️  Cannot place building: City not generated yet!\n";
+        return false;
+    }
+    
+    // Use standard building size from config
+    float width = config.standardWidth;
+    float depth = config.standardDepth;
+    
+    // Check if position is valid
+    if (!isValidBuildingPosition(x, y, width, depth)) {
+        std::cout << "❌ Cannot place building: Position overlaps with existing structures\n";
+        return false;
+    }
+    
+    // Determine building type based on skyline configuration
+    BuildingType type;
+    float height;
+    
+    switch (config.skylineType) {
+        case SkylineType::LOW_RISE:
+            type = BuildingType::LOW_RISE;
+            height = 20.0f + (rand() % 20); // 20-40
+            break;
+        case SkylineType::MID_RISE:
+            type = BuildingType::MID_RISE;
+            height = 40.0f + (rand() % 40); // 40-80
+            break;
+        case SkylineType::SKYSCRAPER:
+            type = BuildingType::HIGH_RISE;
+            height = 80.0f + (rand() % 60); // 80-140
+            break;
+        case SkylineType::MIXED:
+        default:
+            // Random distribution
+            int roll = rand() % 100;
+            if (roll < 40) {
+                type = BuildingType::LOW_RISE;
+                height = 20.0f + (rand() % 20);
+            } else if (roll < 75) {
+                type = BuildingType::MID_RISE;
+                height = 40.0f + (rand() % 40);
+            } else {
+                type = BuildingType::HIGH_RISE;
+                height = 80.0f + (rand() % 60);
+            }
+            break;
+    }
+    
+    // Create and add the building
+    cityData.buildings.emplace_back(x, y, width, depth, height, type);
+    
+    std::cout << "✅ Building placed at (" << (int)x << ", " << (int)y << ") - Type: " 
+              << (type == BuildingType::LOW_RISE ? "Low-Rise" : 
+                  type == BuildingType::MID_RISE ? "Mid-Rise" : "High-Rise") << "\n";
+    
+    return true;
+}

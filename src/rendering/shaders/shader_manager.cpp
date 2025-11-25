@@ -18,12 +18,14 @@ layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoord;
 
 out vec2 TexCoord;
+out vec3 FragPos;
 
 uniform mat4 view;
 uniform mat4 projection;
 uniform bool is2D;
 
 void main() {
+    FragPos = aPos;
     if (is2D) {
         gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
     } else {
@@ -41,17 +43,76 @@ const char* ShaderManager::getFragmentShaderSource() {
 out vec4 FragColor;
 
 in vec2 TexCoord;
+in vec3 FragPos;
 
 uniform vec3 color;
 uniform bool useTexture;
 uniform sampler2D buildingTex;
+uniform bool showWindowLights;
+uniform float timeOfDay;  // Time in hours (0-24)
+
+// Simple pseudo-random function based on position
+float random(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+}
 
 void main() {
+    vec4 baseColor;
+    
     if (useTexture) {
-        FragColor = texture(buildingTex, TexCoord);
+        baseColor = texture(buildingTex, TexCoord);
     } else {
-        FragColor = vec4(color, 1.0);
+        baseColor = vec4(color, 1.0);
     }
+    
+    // Calculate ambient light based on time of day (default to 1.0 for safety)
+    float ambientStrength = 1.0;
+    if (timeOfDay > 0.0) {  // Only apply if timeOfDay is set
+        if (timeOfDay >= 5.0 && timeOfDay < 7.0) {
+            // Sunrise
+            ambientStrength = mix(0.3, 1.0, (timeOfDay - 5.0) / 2.0);
+        } else if (timeOfDay >= 19.0 && timeOfDay < 21.0) {
+            // Sunset
+            ambientStrength = mix(1.0, 0.3, (timeOfDay - 19.0) / 2.0);
+        } else if (timeOfDay >= 21.0 || timeOfDay < 5.0) {
+            // Night
+            ambientStrength = 0.3;
+        }
+    }
+    
+    // Add window lights effect for buildings in 3D view
+    if (showWindowLights && useTexture) {
+        // Create window grid pattern (8x8 windows per building face)
+        vec2 windowGrid = fract(TexCoord * 8.0);
+        
+        // Window frame (dark borders)
+        bool isFrame = windowGrid.x < 0.1 || windowGrid.x > 0.9 || 
+                       windowGrid.y < 0.1 || windowGrid.y > 0.9;
+        
+        if (!isFrame) {
+            // Use fragment position for consistent random per window
+            vec2 windowId = floor(TexCoord * 8.0);
+            float randomValue = random(windowId + FragPos.xy * 0.1);
+            
+            // 60% of windows are lit (random per window)
+            if (randomValue > 0.4) {
+                // Window light intensity based on time (brighter at night)
+                float windowBrightness = 0.25;
+                if (timeOfDay >= 19.0 || timeOfDay < 7.0) {
+                    // Night/early morning: windows glow brighter
+                    windowBrightness = 0.5;
+                }
+                
+                // Subtle warm glow for windows
+                vec3 windowLight = vec3(1.0, 0.95, 0.7) * 0.8;
+                // Blend with texture
+                baseColor.rgb = mix(baseColor.rgb, windowLight, windowBrightness);
+            }
+        }
+    }
+    
+    // Apply ambient lighting to final color
+    FragColor = vec4(baseColor.rgb * ambientStrength, baseColor.a);
 }
 )";
 }
@@ -59,7 +120,8 @@ void main() {
 ShaderManager::ShaderManager() 
     : shaderProgram(0), isCompiled(false),
       colorLocation(-1), viewLocation(-1), projectionLocation(-1),
-      useTextureLocation(-1), is2DLocation(-1) {
+      useTextureLocation(-1), is2DLocation(-1), showWindowLightsLocation(-1),
+      timeOfDayLocation(-1) {
 }
 
 ShaderManager::~ShaderManager() {
@@ -90,18 +152,24 @@ GLuint ShaderManager::compileShader(GLenum type, const char* source) {
 }
 
 bool ShaderManager::compileShaders() {
+    std::cout << "🔧 Compiling shaders...\n";
+    
     // Compile vertex shader
     GLuint vertexShader = compileShader(GL_VERTEX_SHADER, getVertexShaderSource());
     if (vertexShader == 0) {
+        std::cerr << "❌ Vertex shader compilation failed!\n";
         return false;
     }
+    std::cout << "✓ Vertex shader compiled\n";
     
     // Compile fragment shader
     GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, getFragmentShaderSource());
     if (fragmentShader == 0) {
+        std::cerr << "❌ Fragment shader compilation failed!\n";
         glDeleteShader(vertexShader);
         return false;
     }
+    std::cout << "✓ Fragment shader compiled\n";
     
     // Link shader program
     shaderProgram = glCreateProgram();
@@ -141,6 +209,8 @@ void ShaderManager::cacheUniformLocations() {
     projectionLocation = glGetUniformLocation(shaderProgram, "projection");
     useTextureLocation = glGetUniformLocation(shaderProgram, "useTexture");
     is2DLocation = glGetUniformLocation(shaderProgram, "is2D");
+    showWindowLightsLocation = glGetUniformLocation(shaderProgram, "showWindowLights");
+    timeOfDayLocation = glGetUniformLocation(shaderProgram, "timeOfDay");
 }
 
 void ShaderManager::use() const {
@@ -176,5 +246,17 @@ void ShaderManager::setUseTexture(bool use) const {
 void ShaderManager::setIs2D(bool is2D) const {
     if (is2DLocation != -1) {
         glUniform1i(is2DLocation, is2D ? 1 : 0);
+    }
+}
+
+void ShaderManager::setShowWindowLights(bool show) const {
+    if (showWindowLightsLocation != -1) {
+        glUniform1i(showWindowLightsLocation, show ? 1 : 0);
+    }
+}
+
+void ShaderManager::setTimeOfDay(float time) const {
+    if (timeOfDayLocation != -1) {
+        glUniform1f(timeOfDayLocation, time);
     }
 }

@@ -10,7 +10,9 @@
 #include "rendering/mesh/building_mesh.h"
 #include "rendering/mesh/road_mesh.h"
 #include "rendering/mesh/park_mesh.h"
+#include "rendering/mesh/traffic_mesh.h"
 #include "rendering/mesh/mesh_utils.h"
+#include "features/traffic_system/traffic_generator.h"
 
 // Constructor
 CityRenderer::CityRenderer(int screenWidth, int screenHeight)
@@ -19,6 +21,9 @@ CityRenderer::CityRenderer(int screenWidth, int screenHeight)
     , fountain3DVAO(0)
     , fountain3DVBO(0)
     , fountain3DVertexCount(0)
+    , fountainLights3DVAO(0)
+    , fountainLights3DVBO(0)
+    , fountainLights3DVertexCount(0)
 {
 }
 
@@ -63,6 +68,30 @@ void CityRenderer::cleanup() {
         fountain3DVAO = 0;
         fountain3DVBO = 0;
         fountain3DVertexCount = 0;
+    }
+    
+    if (fountainLights3DVAO != 0) {
+        glDeleteVertexArrays(1, &fountainLights3DVAO);
+        glDeleteBuffers(1, &fountainLights3DVBO);
+        fountainLights3DVAO = 0;
+        fountainLights3DVBO = 0;
+        fountainLights3DVertexCount = 0;
+    }
+    
+    // Cleanup traffic buffers
+    if (!traffic3DVAOs.empty()) {
+        glDeleteVertexArrays(traffic3DVAOs.size(), traffic3DVAOs.data());
+        glDeleteBuffers(traffic3DVBOs.size(), traffic3DVBOs.data());
+        traffic3DVAOs.clear();
+        traffic3DVBOs.clear();
+        traffic3DVertexCounts.clear();
+    }
+    if (!trafficVAOs.empty()) {
+        glDeleteVertexArrays(trafficVAOs.size(), trafficVAOs.data());
+        glDeleteBuffers(trafficVBOs.size(), trafficVBOs.data());
+        trafficVAOs.clear();
+        trafficVBOs.clear();
+        trafficVertexCounts.clear();
     }
 }
 
@@ -156,6 +185,15 @@ void CityRenderer::updateCity(const CityData& city, bool view3D) {
             fountain3DVBO = vbo3d;
             fountain3DVertexCount = vertices3D.size() / 5;
         }
+        
+        // Create 3D fountain lights mesh (light bulbs)
+        auto lightVertices = fountainLightsTo3DMesh(city.fountain, screenWidth, screenHeight);
+        if (!lightVertices.empty()) {
+            auto [lightVao, lightVbo] = createBuffer(lightVertices, true);
+            fountainLights3DVAO = lightVao;
+            fountainLights3DVBO = lightVbo;
+            fountainLights3DVertexCount = lightVertices.size() / 5;
+        }
     }
     
     // Create buffers for buildings
@@ -184,9 +222,9 @@ void CityRenderer::renderRoads(const CityData& city, bool view3D, ShaderManager&
         
         shaderManager.setUseTexture(false);
     } else {
-        // In 2D mode: Draw roads as points
+        // In 2D mode: Draw roads as bright yellow points
         shaderManager.setIs2D(true);
-        shaderManager.setColor(1.0f, 0.8f, 0.2f);
+        shaderManager.setColor(1.0f, 1.0f, 0.0f);  // Bright yellow
         glPointSize(2.0f);
         
         for (size_t i = 0; i < roadCount && i < VAOs.size(); i++) {
@@ -219,9 +257,9 @@ void CityRenderer::renderParks(const CityData& city, bool view3D, ShaderManager&
         
         shaderManager.setUseTexture(false);
     } else {
-        // In 2D mode: Draw parks as green points
+        // In 2D mode: Draw parks as bright green points
         shaderManager.setIs2D(true);
-        shaderManager.setColor(0.2f, 0.8f, 0.3f);
+        shaderManager.setColor(0.0f, 1.0f, 0.0f);  // Bright lime green
         
         size_t fountainOffset = roadCount + parkCount;
         for (size_t i = roadCount; i < fountainOffset && i < VAOs.size(); i++) {
@@ -233,31 +271,70 @@ void CityRenderer::renderParks(const CityData& city, bool view3D, ShaderManager&
 
 // Render fountain
 void CityRenderer::renderFountain(const CityData& city, bool view3D, ShaderManager& shaderManager,
-                                   GLuint fountainTexture, size_t fountainOffset, size_t fountainCount) {
+                                   GLuint fountainTexture, size_t fountainOffset, size_t fountainCount, float timeOfDay) {
     if (view3D) {
-        // In 3D mode: Draw textured fountain mesh
+        // In 3D mode: Draw textured fountain mesh with nighttime lighting
         shaderManager.setIs2D(false);
-        shaderManager.setUseTexture(true);
+        
+        // Calculate if it's nighttime (18:00-6:00)
+        bool isNight = (timeOfDay >= 18.0f || timeOfDay < 6.0f);
+        
+        // Calculate glow intensity based on time
+        float glowIntensity = 0.0f;
+        if (isNight) {
+            // Smooth transition during sunset (18:00-20:00) and sunrise (4:00-6:00)
+            if (timeOfDay >= 18.0f && timeOfDay < 20.0f) {
+                // Sunset: fade in
+                glowIntensity = (timeOfDay - 18.0f) / 2.0f;
+            } else if (timeOfDay >= 20.0f || timeOfDay < 4.0f) {
+                // Full night: full glow
+                glowIntensity = 1.0f;
+            } else if (timeOfDay >= 4.0f && timeOfDay < 6.0f) {
+                // Sunrise: fade out
+                glowIntensity = 1.0f - ((timeOfDay - 4.0f) / 2.0f);
+            }
+        }
         
         if (fountain3DVertexCount > 0) {
+            // Always render the fountain structure with texture
+            shaderManager.setUseTexture(true);
             if (fountainTexture != 0) {
                 glBindTexture(GL_TEXTURE_2D, fountainTexture);
-            } else {
-                // Fallback: use cyan color
-                shaderManager.setUseTexture(false);
-                shaderManager.setColor(0.3f, 0.7f, 1.0f);
             }
-            
             glBindVertexArray(fountain3DVAO);
             glDrawArrays(GL_TRIANGLES, 0, fountain3DVertexCount);
+            
+            // Render light bulbs at night
+            if (glowIntensity > 0.0f && fountainLights3DVertexCount > 0) {
+                // Enable additive blending for glowing effect
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE);  // Additive blending
+                glDepthMask(GL_FALSE);  // Don't write to depth buffer
+                
+                shaderManager.setUseTexture(false);
+                
+                // Warm white color for lights (like LED bulbs)
+                // Compensate for night ambient dimming by making it VERY bright
+                float warmR = 4.0f * glowIntensity;  // Bright warm white red
+                float warmG = 3.5f * glowIntensity;  // Slightly less green for warmth
+                float warmB = 2.5f * glowIntensity;  // Even less blue for warm tone
+                shaderManager.setColor(warmR, warmG, warmB);
+                
+                // Render the light bulb spheres
+                glBindVertexArray(fountainLights3DVAO);
+                glDrawArrays(GL_TRIANGLES, 0, fountainLights3DVertexCount);
+                
+                glDepthMask(GL_TRUE);  // Re-enable depth writes
+                glDisable(GL_BLEND);
+            }
         }
         
         shaderManager.setUseTexture(false);
     } else {
-        // In 2D mode: Draw fountain as cyan points
+        // In 2D mode: Draw fountain as bright cyan points
         shaderManager.setIs2D(true);
         if (fountainCount > 0 && fountainOffset < VAOs.size()) {
-            shaderManager.setColor(0.3f, 0.7f, 1.0f);
+            shaderManager.setColor(0.0f, 1.0f, 1.0f);  // Bright cyan
             glBindVertexArray(VAOs[fountainOffset]);
             glDrawArrays(GL_POINTS, 0, vertexCounts[fountainOffset]);
         }
@@ -273,6 +350,7 @@ void CityRenderer::renderBuildings(const CityData& city, const CityConfig& confi
     if (view3D) {
         // Use textures in 3D mode based on texture theme
         shaderManager.setUseTexture(true);
+        shaderManager.setShowWindowLights(true);  // Enable window lights in 3D
         
         for (size_t i = buildingStart; i < VAOs.size(); i++) {
             size_t buildingIndex = i - buildingStart;
@@ -352,22 +430,23 @@ void CityRenderer::renderBuildings(const CityData& city, const CityConfig& confi
     } else {
         // Use colors in 2D mode
         shaderManager.setUseTexture(false);
+        shaderManager.setShowWindowLights(false);  // No window lights in 2D
         
         for (size_t i = buildingStart; i < VAOs.size(); i++) {
             size_t buildingIndex = i - buildingStart;
             if (buildingIndex < city.buildings.size()) {
                 const Building& building = city.buildings[buildingIndex];
                 
-                // Set color based on building type
+                // Set bright color based on building type
                 switch (building.type) {
                     case BuildingType::LOW_RISE:
-                        shaderManager.setColor(0.7f, 0.4f, 0.3f);  // Brick red
+                        shaderManager.setColor(1.0f, 0.4f, 0.2f);  // Bright orange-red
                         break;
                     case BuildingType::MID_RISE:
-                        shaderManager.setColor(0.5f, 0.5f, 0.5f);  // Gray
+                        shaderManager.setColor(0.9f, 0.9f, 0.9f);  // Bright white-gray
                         break;
                     case BuildingType::HIGH_RISE:
-                        shaderManager.setColor(0.6f, 0.7f, 0.8f);  // Glass blue
+                        shaderManager.setColor(0.3f, 0.8f, 1.0f);  // Bright sky blue
                         break;
                 }
                 
@@ -393,6 +472,79 @@ void CityRenderer::render(const CityData& city, const CityConfig& config, bool v
     // Render each city element
     renderRoads(city, view3D, shaderManager, roadTexture, roadCount);
     renderParks(city, view3D, shaderManager, grassTexture, roadCount, parkCount);
-    renderFountain(city, view3D, shaderManager, fountainTexture, fountainOffset, fountainCount);
+    renderFountain(city, view3D, shaderManager, fountainTexture, fountainOffset, fountainCount, config.timeOfDay);
     renderBuildings(city, config, view3D, shaderManager, brickTexture, concreteTexture, glassTexture, buildingStart);
+}
+
+// Update traffic rendering buffers
+void CityRenderer::updateTraffic(const TrafficData& trafficData, bool view3D) {
+    // Clear old traffic buffers
+    if (!traffic3DVAOs.empty()) {
+        glDeleteVertexArrays(traffic3DVAOs.size(), traffic3DVAOs.data());
+        glDeleteBuffers(traffic3DVBOs.size(), traffic3DVBOs.data());
+        traffic3DVAOs.clear();
+        traffic3DVBOs.clear();
+        traffic3DVertexCounts.clear();
+    }
+    if (!trafficVAOs.empty()) {
+        glDeleteVertexArrays(trafficVAOs.size(), trafficVAOs.data());
+        glDeleteBuffers(trafficVBOs.size(), trafficVBOs.data());
+        trafficVAOs.clear();
+        trafficVBOs.clear();
+        trafficVertexCounts.clear();
+    }
+    
+    if (view3D) {
+        // Generate 3D meshes for each car
+        for (const Car& car : trafficData.cars) {
+            std::vector<float> vertices = carTo3DMesh(car, screenWidth, screenHeight);
+            if (!vertices.empty()) {
+                auto [vao, vbo] = createBuffer(vertices, true);
+                traffic3DVAOs.push_back(vao);
+                traffic3DVBOs.push_back(vbo);
+                traffic3DVertexCounts.push_back(vertices.size() / 5);
+            }
+        }
+    } else {
+        // Generate 2D points for each car
+        for (const Car& car : trafficData.cars) {
+            std::vector<float> vertices = carTo2DVertices(car, screenWidth, screenHeight);
+            if (!vertices.empty()) {
+                auto [vao, vbo] = createBuffer(vertices, false);
+                trafficVAOs.push_back(vao);
+                trafficVBOs.push_back(vbo);
+                trafficVertexCounts.push_back(1); // One point per car
+            }
+        }
+    }
+}
+
+// Render traffic
+void CityRenderer::renderTraffic(const TrafficData& trafficData, const CityConfig& config, bool view3D, ShaderManager& shaderManager) {
+    if (!config.showTraffic || trafficData.cars.empty()) return;
+    
+    if (view3D) {
+        // Render 3D car meshes
+        shaderManager.setIs2D(false);
+        shaderManager.setUseTexture(false);
+        
+        for (size_t i = 0; i < traffic3DVAOs.size() && i < trafficData.cars.size(); i++) {
+            const Car& car = trafficData.cars[i];
+            shaderManager.setColor(car.color.r, car.color.g, car.color.b);
+            glBindVertexArray(traffic3DVAOs[i]);
+            glDrawArrays(GL_TRIANGLES, 0, traffic3DVertexCounts[i]);
+        }
+    } else {
+        // Render 2D points
+        shaderManager.setIs2D(true);
+        shaderManager.setUseTexture(false);
+        glPointSize(4.0f);  // Larger points for cars
+        
+        for (size_t i = 0; i < trafficVAOs.size() && i < trafficData.cars.size(); i++) {
+            const Car& car = trafficData.cars[i];
+            shaderManager.setColor(car.color.r, car.color.g, car.color.b);
+            glBindVertexArray(trafficVAOs[i]);
+            glDrawArrays(GL_POINTS, 0, trafficVertexCounts[i]);
+        }
+    }
 }
