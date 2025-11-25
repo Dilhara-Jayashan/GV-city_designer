@@ -85,11 +85,11 @@ void InputHandler::processInput(GLFWwindow* window) {
     // 5/6 - Increase/Decrease road width
     if (isKeyJustPressed(window, GLFW_KEY_5)) {
         config.roadWidth = std::max(2, config.roadWidth - 2);
-        std::cout << "Road Width: " << config.roadWidth << " pixels\n";
+        std::cout << "Road Width: " << config.roadWidth << " pixels (Press G to regenerate)\n";
     }
     if (isKeyJustPressed(window, GLFW_KEY_6)) {
         config.roadWidth = std::min(20, config.roadWidth + 2);
-        std::cout << "Road Width: " << config.roadWidth << " pixels\n";
+        std::cout << "Road Width: " << config.roadWidth << " pixels (Press G to regenerate)\n";
     }
     
     // === SKYLINE CONTROLS ===

@@ -96,7 +96,7 @@ struct CityConfig {
         : numBuildings(20),
           layoutSize(10),
           roadPattern(RoadPattern::GRID),
-          roadWidth(8),
+          roadWidth(14),
           skylineType(SkylineType::MIXED),
           textureTheme(TextureTheme::MODERN),
           parkRadius(40),

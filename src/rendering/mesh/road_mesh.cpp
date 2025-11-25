@@ -15,7 +15,9 @@ std::vector<float> roadTo3DMesh(const Road& road, int screenWidth, int screenHei
     
     if (road.points.size() < 2) return vertices;
     
-    float roadWidth = 0.02f;  // Width in normalized coordinates
+    // Convert road width from pixels to normalized coordinates
+    // screenWidth pixels maps to 2.0 in normalized coords (-1.0 to 1.0)
+    float roadWidth = (road.width / (float)screenWidth) * 2.0f;
     int margin = 50;  // Boundary margin in pixels
     
     // Process each segment of the road

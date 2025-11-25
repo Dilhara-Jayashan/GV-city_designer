@@ -55,6 +55,13 @@ int main()
     // Setup callbacks (framebuffer resize + mouse)
     app.setupCallbacks(&camera);
     
+    // Set initial cursor mode based on starting view (2D = normal cursor)
+    if (cityConfig.view3D) {
+        glfwSetInputMode(app.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    } else {
+        glfwSetInputMode(app.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+    
     // Create renderer
     CityRenderer renderer(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -105,6 +112,15 @@ int main()
         bool viewModeChanged = (cityConfig.view3D != lastView3D);
         if (viewModeChanged) {
             lastView3D = cityConfig.view3D;
+            
+            // Toggle cursor mode based on view
+            if (cityConfig.view3D) {
+                // 3D mode: disable cursor for FPP camera control
+                glfwSetInputMode(app.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            } else {
+                // 2D mode: enable cursor for free mouse movement
+                glfwSetInputMode(app.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            }
         }
         
         // If city was generated OR view mode changed, update rendering data
