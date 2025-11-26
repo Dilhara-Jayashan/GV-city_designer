@@ -149,6 +149,11 @@ int main()
             dayNightCycle.setTimeOfDay(cityConfig.timeOfDay);
         }
         lastTimeOfDay = cityConfig.timeOfDay;
+        
+        // Sync auto time progress toggle (via 'N' key)
+        if (cityConfig.autoTimeProgress != dayNightCycle.isAutoProgressEnabled()) {
+            dayNightCycle.toggleAutoProgress();
+        }
         camera.processKeyboard(app.getWindow(), deltaTime);
         
         // Handle view mode changes
@@ -189,11 +194,6 @@ int main()
                                                  city.parks, city.fountain,
                                                  SCREEN_WIDTH, SCREEN_HEIGHT);
                     renderer.updateTraffic(trafficSystem.getTrafficData(), cityConfig.view3D);
-                }
-                
-                // Show keyboard controls after generation
-                if (!viewModeChanged) {  // Only show on actual generation, not view mode change
-                    InputHandler::displayControls();
                 }
             }
         }

@@ -166,6 +166,9 @@ void InputHandler::processInput(GLFWwindow* window) {
     if (isKeyJustPressed(window, GLFW_KEY_G)) {
         genRequested = true;
         if (cityGen) {
+            // Show keyboard controls BEFORE generation
+            displayControls();
+            // Now generate the city
             cityGen->generateCity(config);
         }
     }
