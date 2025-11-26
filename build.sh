@@ -75,13 +75,14 @@ ALL_SOURCES=(
 
 # Compile
 clang++ "${ALL_SOURCES[@]}" \
-        -o CityDesigner \
-        -Iinclude \
-        -I/opt/homebrew/include \
-        -L/opt/homebrew/lib \
-        -lglfw \
-        -framework OpenGL \
-        -std=c++17
+    -o CityDesigner \
+    -Iinclude \
+    -lglfw \
+    -lGL \
+    -ldl \
+    -lX11 \
+    -lpthread \
+    -std=c++17
 
 if [ $? -eq 0 ]; then
     echo ""
