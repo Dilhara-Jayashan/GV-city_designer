@@ -40,11 +40,11 @@ void InputHandler::processInput(GLFWwindow* window) {
     // === BUILDING CONTROLS ===
     // 1/2 - Increase/Decrease number of buildings
     if (isKeyJustPressed(window, GLFW_KEY_1)) {
-        config.numBuildings = std::max(1, config.numBuildings - 5);
+        config.numBuildings = std::max(1, config.numBuildings - 2);
         std::cout << "Buildings: " << config.numBuildings << "\n";
     }
     if (isKeyJustPressed(window, GLFW_KEY_2)) {
-        config.numBuildings = std::min(100, config.numBuildings + 5);
+        config.numBuildings = std::min(100, config.numBuildings + 2);
         std::cout << "Buildings: " << config.numBuildings << "\n";
     }
     
